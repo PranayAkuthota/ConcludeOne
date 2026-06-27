@@ -1,0 +1,7 @@
+const { memoryLookupTool } = require("./server/ai/tools/memoryLookup.tool");
+const mongoose = require("mongoose");
+mongoose.connect("mongodb://127.0.0.1:27017/conclude_one").then(async () => {
+  const result = await memoryLookupTool.invoke({ customerId: "CUST-99044" });
+  console.log("TOOL RESULT:", typeof result, result);
+  process.exit(0);
+});
