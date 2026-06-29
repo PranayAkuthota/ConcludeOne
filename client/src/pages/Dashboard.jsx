@@ -4,6 +4,7 @@ import { Activity, ShieldAlert, CheckCircle2, Clock, ArrowRight, AlertTriangle, 
 import { apiFetch } from "../lib/api";
 
 export default function Dashboard() {
+  const [activeDomain, setActiveDomain] = useState(null);
   const [analytics, setAnalytics] = useState(null);
   const [activeCases, setActiveCases] = useState([]);
   const [pendingApprovals, setPendingApprovals] = useState([]);
@@ -43,6 +44,11 @@ export default function Dashboard() {
   };
 
   useEffect(() => {
+    apiFetch("http://localhost:3005/api/settings/active-domain")
+      .then(res => res.json())
+      .then(data => setActiveDomain(data))
+      .catch(err => console.error(err));
+
     apiFetch("http://localhost:3005/api/analytics")
       .then(res => res.json())
       .then(data => setAnalytics(data))
@@ -61,9 +67,11 @@ export default function Dashboard() {
     <div className="space-y-10">
       <div className="flex flex-col md:flex-row md:items-center md:justify-between border-b border-border/50 pb-6">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-foreground">Executive Command Center</h1>
+          <h1 className="text-2xl font-bold tracking-tight text-foreground">
+            {activeDomain ? `${activeDomain.name} Hub` : "Executive Command Center"}
+          </h1>
           <p className="text-muted-foreground mt-1 text-[15px]">
-            Real-time multi-agent decision intelligence.
+            Real-time agentic orchestration, pipeline execution metrics, and audit logs.
           </p>
         </div>
         <div className="mt-4 md:mt-0 flex items-center space-x-3">
@@ -80,28 +88,36 @@ export default function Dashboard() {
       {analytics ? (
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
           <div className="glass-panel p-6 rounded-xl transition-shadow hover:shadow-md">
-            <h3 className="tracking-widest text-[11px] font-bold uppercase text-muted-foreground mb-4">Decisions Generated</h3>
+            <h3 className="tracking-widest text-[11px] font-bold uppercase text-muted-foreground mb-4">
+              {activeDomain?.kpis?.metric1 || "Decisions Generated"}
+            </h3>
             <div className="flex items-end justify-between">
               <div className="text-4xl font-semibold tracking-tight">{analytics.recommendationsGenerated}</div>
               <Activity className="h-5 w-5 text-muted-foreground mb-1" />
             </div>
           </div>
           <div className="glass-panel p-6 rounded-xl transition-shadow hover:shadow-md">
-            <h3 className="tracking-widest text-[11px] font-bold uppercase text-muted-foreground mb-4">Automation Rate</h3>
+            <h3 className="tracking-widest text-[11px] font-bold uppercase text-muted-foreground mb-4">
+              {activeDomain?.kpis?.metric2 || "Automation Rate"}
+            </h3>
             <div className="flex items-end justify-between">
               <div className="text-4xl font-semibold tracking-tight text-emerald-600">{analytics.approvalRate}</div>
               <CheckCircle2 className="h-5 w-5 text-emerald-600 mb-1" />
             </div>
           </div>
           <div className="glass-panel p-6 rounded-xl transition-shadow hover:shadow-md">
-            <h3 className="tracking-widest text-[11px] font-bold uppercase text-muted-foreground mb-4">AI Confidence</h3>
+            <h3 className="tracking-widest text-[11px] font-bold uppercase text-muted-foreground mb-4">
+              {activeDomain?.kpis?.metric3 || "AI Confidence"}
+            </h3>
             <div className="flex items-end justify-between">
               <div className="text-4xl font-semibold tracking-tight">{analytics.averageConfidence}</div>
               <ShieldAlert className="h-5 w-5 text-muted-foreground mb-1" />
             </div>
           </div>
           <div className="glass-panel p-6 rounded-xl transition-shadow hover:shadow-md">
-            <h3 className="tracking-widest text-[11px] font-bold uppercase text-muted-foreground mb-4">Avg Latency</h3>
+            <h3 className="tracking-widest text-[11px] font-bold uppercase text-muted-foreground mb-4">
+              {activeDomain?.kpis?.metric4 || "Avg Latency"}
+            </h3>
             <div className="flex items-end justify-between">
               <div className="text-4xl font-semibold tracking-tight">{analytics.averageProcessingTime}</div>
               <Clock className="h-5 w-5 text-muted-foreground mb-1" />

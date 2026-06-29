@@ -1,12 +1,13 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
-import { Settings as SettingsIcon, User, Bot, Database, Save, Key, Sliders, CheckCircle2, ShieldAlert, AlertTriangle, Loader2 } from "lucide-react";
+import { Settings as SettingsIcon, User, Bot, Database, Save, Key, Sliders, CheckCircle2, ShieldAlert, AlertTriangle, Loader2, LayoutGrid, Sparkles } from "lucide-react";
+import { apiFetch } from "../lib/api";
 
 export default function Settings() {
   const { user } = useAuth();
   
   // Tab control state
-  const [activeTab, setActiveTab] = useState("profile"); // profile, ai, database
+  const [activeTab, setActiveTab] = useState("profile"); // profile, ai, database, domain
   
   // Profile state
   const [profileName, setProfileName] = useState(user?.name || "Admin User");
@@ -21,10 +22,30 @@ export default function Settings() {
   // DB Config state
   const [mongoUri, setMongoUri] = useState("mongodb+srv://*****:*****@cluster0.mongodb.net/concludeone");
   
+  // Domain config state
+  const [domains, setDomains] = useState([]);
+  const [activeDomain, setActiveDomain] = useState(null);
+  
   // Status feedback state
   const [saveStatus, setSaveStatus] = useState("");
   const [dbStatus, setDbStatus] = useState("");
   const [testingDb, setTestingDb] = useState(false);
+  const [updatingDomain, setUpdatingDomain] = useState(false);
+
+  // Fetch settings on mount
+  useEffect(() => {
+    // Fetch domains list
+    apiFetch("http://localhost:3005/api/settings/domains")
+      .then(res => res.json())
+      .then(data => setDomains(data))
+      .catch(console.error);
+
+    // Fetch active domain template
+    apiFetch("http://localhost:3005/api/settings/active-domain")
+      .then(res => res.json())
+      .then(data => setActiveDomain(data))
+      .catch(console.error);
+  }, []);
 
   const handleSaveProfile = (e) => {
     e.preventDefault();
@@ -51,6 +72,26 @@ export default function Settings() {
       setTestingDb(false);
       setDbStatus("connected");
     }, 1500);
+  };
+
+  const handleSelectDomain = async (domainId) => {
+    setUpdatingDomain(true);
+    try {
+      const res = await apiFetch("http://localhost:3005/api/settings/active-domain", {
+        method: "POST",
+        body: { domainId }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setActiveDomain(data.activeDomain);
+        setSaveStatus("domain-saved");
+        setTimeout(() => setSaveStatus(""), 3000);
+      }
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setUpdatingDomain(false);
+    }
   };
 
   return (
@@ -81,6 +122,17 @@ export default function Settings() {
             <User className="mr-2 h-4 w-4" /> Account Profile
           </button>
           
+          <button 
+            onClick={() => setActiveTab("domain")}
+            className={`flex w-full items-center rounded-md px-3 py-2 text-xs font-bold transition-colors ${
+              activeTab === "domain" 
+                ? "text-indigo-600 bg-indigo-50 border border-indigo-100" 
+                : "text-slate-600 hover:bg-slate-50 border border-transparent"
+            }`}
+          >
+            <LayoutGrid className="mr-2 h-4 w-4" /> B2B Decision Domain
+          </button>
+
           <button 
             onClick={() => setActiveTab("ai")}
             className={`flex w-full items-center rounded-md px-3 py-2 text-xs font-bold transition-colors ${
@@ -140,6 +192,61 @@ export default function Settings() {
                   {saveStatus === "profile-saved" && <span className="text-xs text-emerald-600 flex items-center"><CheckCircle2 className="mr-1 h-3.5 w-3.5" /> Profile updated successfully!</span>}
                 </div>
               </form>
+            </div>
+          )}
+
+          {/* B2B Decision Domain Tab */}
+          {activeTab === "domain" && (
+            <div className="glass-panel p-6 rounded-xl bg-white shadow-sm space-y-6 animate-fade-in">
+              <div className="border-b border-border/50 pb-3 flex justify-between items-center">
+                <h3 className="text-sm font-bold text-slate-800 flex items-center">
+                  <LayoutGrid className="mr-2 h-4 w-4 text-indigo-500" /> B2B Decision Domain Templates
+                </h3>
+                {saveStatus === "domain-saved" && (
+                  <span className="text-xs text-emerald-600 flex items-center font-bold">
+                    <CheckCircle2 className="mr-1 h-3.5 w-3.5" /> Domain Config Active!
+                  </span>
+                )}
+              </div>
+              
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                Conclude One is a domain-agnostic reasoning platform. Switch the template configuration below to instantly morph the agent names, RAG nodes, and KPIs across the platform to your B2B use case of choice.
+              </p>
+
+              <div className="space-y-4">
+                {domains.map((dom) => {
+                  const isActive = activeDomain && activeDomain.id === dom.id;
+                  return (
+                    <div 
+                      key={dom.id}
+                      onClick={() => !updatingDomain && handleSelectDomain(dom.id)}
+                      className={`p-4 border rounded-xl shadow-xs transition-all cursor-pointer flex flex-col justify-between hover:border-indigo-300 relative bg-white ${
+                        isActive ? "border-indigo-600 ring-2 ring-indigo-50 bg-indigo-50/10" : "border-border/80"
+                      }`}
+                    >
+                      <div className="flex justify-between items-center mb-2">
+                        <span className="text-sm font-bold text-slate-800 flex items-center">
+                          {dom.name}
+                          {isActive && <Sparkles className="ml-2 h-3.5 w-3.5 text-indigo-600" />}
+                        </span>
+                        <span className={`text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded ${
+                          isActive ? "bg-indigo-600 text-white" : "bg-slate-100 text-slate-500"
+                        }`}>
+                          {isActive ? "Active template" : "Select template"}
+                        </span>
+                      </div>
+                      <p className="text-xs text-muted-foreground leading-normal mb-3">
+                        Configures metrics ({dom.kpis.metric1}, {dom.kpis.metric2}) and maps vector nodes dynamically.
+                      </p>
+                      
+                      <div className="grid grid-cols-2 gap-2 text-[10px] font-mono border-t border-dashed border-border/60 pt-3">
+                        <div className="text-slate-600"><strong>Planner Agent:</strong> {dom.agents.planner}</div>
+                        <div className="text-slate-600"><strong>Root Cause/Risk:</strong> {dom.agents.analyzer}</div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
           )}
 

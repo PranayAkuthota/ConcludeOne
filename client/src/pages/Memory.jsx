@@ -1,37 +1,77 @@
 import { useState, useEffect } from "react";
 import { Database, Network, Search, Zap, Loader2, CheckCircle2, ArrowRight, ShieldAlert, Cpu, Sparkles, ChevronRight, Activity, Bot, History } from "lucide-react";
+import { apiFetch } from "../lib/api";
 
 export default function Memory() {
+  const [activeDomain, setActiveDomain] = useState(null);
   const [isSyncing, setIsSyncing] = useState(false);
   const [syncComplete, setSyncComplete] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearching, setIsSearching] = useState(false);
   const [selectedNode, setSelectedNode] = useState(null);
 
-  // Nodes for the complex reasoning memory graph
-  const nodes = [
-    { id: 1, label: "Orchestration Hub", type: "core", x: 50, y: 50, icon: Network, details: "The multi-agent graph engine coordinating inputs and output states.", status: "Active" },
-    
-    // Inputs (Left column)
-    { id: 2, label: "CRM History", type: "input", x: 22, y: 32, icon: Database, details: "Accounts metrics, health scores, AE logs, and contract values.", status: "Synced" },
-    { id: 3, label: "Call Audio Transcripts", type: "input", x: 18, y: 50, icon: Cpu, details: "Raw meeting transcripts and natural language objection inputs.", status: "Synced" },
-    { id: 4, label: "Email Threads", type: "input", x: 24, y: 68, icon: Activity, details: "Customer support cases, escalation tickets, and email threads.", status: "Synced" },
-    
-    // Agents (Top / Bottom clusters)
-    { id: 5, label: "Meeting Agent", type: "agent", x: 38, y: 25, icon: Bot, details: "Extracts key pain points, sentiment, and objections from calls.", status: "Idle" },
-    { id: 6, label: "CRM Agent", type: "agent", x: 62, y: 25, icon: Database, details: "Parses account health metrics, ARR, and sales opportunity stage.", status: "Idle" },
-    { id: 7, label: "Context RAG Engine", type: "agent", x: 42, y: 75, icon: Search, details: "Queries ChromaDB for semantically matching playbooks.", status: "Active" },
-    { id: 8, label: "Risk Analyst Agent", type: "agent", x: 58, y: 75, icon: ShieldAlert, details: "Computes Deal Risk and Churn Risk parameters dynamically.", status: "Idle" },
+  const getIconForType = (type, label) => {
+    if (type === "core") return Network;
+    if (type === "playbook") return Zap;
+    if (type === "agent") {
+      if (label.includes("Meeting") || label.includes("Parser") || label.includes("Resume")) return Bot;
+      if (label.includes("CRM") || label.includes("Context") || label.includes("Employer")) return Database;
+      if (label.includes("Risk") || label.includes("Cause") || label.includes("Skill")) return ShieldAlert;
+      return Bot;
+    }
+    if (type === "input") {
+      if (label.includes("CRM") || label.includes("Log") || label.includes("Database")) return Database;
+      if (label.includes("Transcript") || label.includes("Webhook")) return Cpu;
+      return Activity;
+    }
+    if (type === "output") {
+      if (label.includes("Brief") || label.includes("Profile")) return CheckCircle2;
+      if (label.includes("Memory") || label.includes("Feedback")) return History;
+      return ArrowRight;
+    }
+    return Cpu;
+  };
 
-    // Policy Playbooks (Bottom right)
-    { id: 9, label: "Churn Prevention Playbook", type: "playbook", x: 74, y: 78, icon: Zap, details: "Rules for retaining high-value enterprise accounts.", status: "Active" },
-    { id: 10, label: "Standard Discount margins", type: "playbook", x: 84, y: 66, icon: Sparkles, details: "Allowed pricing tiers and standard concession guidelines.", status: "Active" },
-
-    // Outputs (Right column)
-    { id: 11, label: "Executive Briefs", type: "output", x: 76, y: 46, icon: CheckCircle2, details: "Recommendations, priorities, and confidence score outputs.", status: "Active" },
-    { id: 12, label: "Approved Actions", type: "output", x: 85, y: 32, icon: ArrowRight, details: "Actions approved by human review and scheduled for execution.", status: "Executed" },
-    { id: 13, label: "Long-Term Memory Node", type: "output", x: 88, y: 50, icon: History, details: "MongoDB persistence logs feeding historic outcomes back to the hub.", status: "Active" }
+  const defaultNodes = [
+    { id: 1, label: "Orchestration Hub", type: "core" },
+    { id: 2, label: "CRM History", type: "input" },
+    { id: 3, label: "Call Audio Transcripts", type: "input" },
+    { id: 4, label: "Email Threads", type: "input" },
+    { id: 5, label: "Meeting Agent", type: "agent" },
+    { id: 6, label: "CRM Agent", type: "agent" },
+    { id: 7, label: "Context RAG Engine", type: "agent" },
+    { id: 8, label: "Risk Analyst Agent", type: "agent" },
+    { id: 9, label: "Churn Prevention Playbook", type: "playbook" },
+    { id: 10, label: "Standard Discount margins", type: "playbook" },
+    { id: 11, label: "Executive Briefs", type: "output" },
+    { id: 12, label: "Approved Actions", type: "output" },
+    { id: 13, label: "Long-Term Memory Node", type: "output" }
   ];
+
+  const coords = {
+    1: { x: 50, y: 50, details: "The multi-agent graph engine coordinating inputs and output states.", status: "Active" },
+    2: { x: 22, y: 32, details: "Primary upstream B2B system details.", status: "Synced" },
+    3: { x: 18, y: 50, details: "Raw event interaction details.", status: "Synced" },
+    4: { x: 24, y: 68, details: "Contextual history log updates.", status: "Synced" },
+    5: { x: 38, y: 25, details: "Extracts key issues and objections.", status: "Idle" },
+    6: { x: 62, y: 25, details: "Parses active metadata parameters.", status: "Idle" },
+    7: { x: 42, y: 75, details: "Queries vector stores for semantic matching playbooks.", status: "Active" },
+    8: { x: 58, y: 75, details: "Computes custom risk models dynamically.", status: "Idle" },
+    9: { x: 74, y: 78, details: "System execution policies.", status: "Active" },
+    10: { x: 84, y: 66, details: "Regulatory margins and guidelines.", status: "Active" },
+    11: { x: 76, y: 46, details: "Reasoning and priorities synthesized.", status: "Active" },
+    12: { x: 85, y: 32, details: "Actions approved by human review.", status: "Executed" },
+    13: { x: 88, y: 50, details: "Database feedback loops feeding historic outcomes.", status: "Active" }
+  };
+
+  const nodes = (activeDomain?.nodes || defaultNodes).map(node => ({
+    ...node,
+    x: coords[node.id]?.x || 50,
+    y: coords[node.id]?.y || 50,
+    details: coords[node.id]?.details || node.label,
+    status: coords[node.id]?.status || "Active",
+    icon: getIconForType(node.type, node.label)
+  }));
 
   // Links connecting the nodes
   const links = [
@@ -45,8 +85,21 @@ export default function Memory() {
   ];
 
   useEffect(() => {
-    // Default select Orchestration Hub on mount
-    setSelectedNode(nodes[0]);
+    apiFetch("http://localhost:3005/api/settings/active-domain")
+      .then(res => res.json())
+      .then(data => {
+        setActiveDomain(data);
+        const coreNode = data.nodes.find(n => n.type === "core");
+        setSelectedNode(coreNode ? {
+          ...coreNode,
+          x: coords[coreNode.id]?.x || 50,
+          y: coords[coreNode.id]?.y || 50,
+          details: coords[coreNode.id]?.details || coreNode.label,
+          status: coords[coreNode.id]?.status || "Active",
+          icon: getIconForType(coreNode.type, coreNode.label)
+        } : null);
+      })
+      .catch(console.error);
   }, []);
 
   const handleSync = () => {

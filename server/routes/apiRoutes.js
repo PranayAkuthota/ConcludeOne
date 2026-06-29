@@ -261,4 +261,51 @@ router.get('/analytics', async (req, res) => {
   }
 });
 
+const fs = require('fs');
+const path = require('path');
+
+// Get all domain templates
+router.get('/settings/domains', (req, res) => {
+  try {
+    const templatesPath = path.join(__dirname, '../config/domainTemplates.json');
+    const templates = JSON.parse(fs.readFileSync(templatesPath, 'utf8'));
+    res.json(templates);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Get active domain configuration
+router.get('/settings/active-domain', (req, res) => {
+  try {
+    const activePath = path.join(__dirname, '../config/activeDomain.json');
+    const templatesPath = path.join(__dirname, '../config/domainTemplates.json');
+    
+    const { activeDomainId } = JSON.parse(fs.readFileSync(activePath, 'utf8'));
+    const templates = JSON.parse(fs.readFileSync(templatesPath, 'utf8'));
+    
+    const activeDomain = templates.find(t => t.id === activeDomainId) || templates[0];
+    res.json(activeDomain);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Update active domain configuration
+router.post('/settings/active-domain', (req, res) => {
+  try {
+    const { domainId } = req.body;
+    const activePath = path.join(__dirname, '../config/activeDomain.json');
+    fs.writeFileSync(activePath, JSON.stringify({ activeDomainId: domainId }, null, 2));
+    
+    const templatesPath = path.join(__dirname, '../config/domainTemplates.json');
+    const templates = JSON.parse(fs.readFileSync(templatesPath, 'utf8'));
+    const activeDomain = templates.find(t => t.id === domainId) || templates[0];
+    
+    res.json({ message: "Domain template updated successfully", activeDomain });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 module.exports = router;
