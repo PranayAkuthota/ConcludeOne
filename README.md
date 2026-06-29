@@ -10,20 +10,71 @@ It features a state-of-the-art **LangGraph** orchestration workflow that coordin
 ## 🎯 Architecture Diagram
 
 ```mermaid
-graph TD
-    A[Incoming Request] --> B[Planner Agent]
-    B --> C(Meeting Agent)
-    B --> D(CRM Agent)
-    B --> E(Context Agent - RAG)
-    C --> F[Gather & Merge Context]
-    D --> F
-    E --> F
-    F --> G[Risk Agent]
-    G --> H[Recommendation Agent]
-    H --> I[Explainability Agent]
-    I --> J[Memory Agent]
-    J --> K[Human-in-the-Loop Approval]
+graph TB
+    %% User Interface & Experience Layer
+    subgraph UI_Layer [User Interface & Experience Layer]
+        UI1[Dashboard KPIs & Insights]
+        UI2[Case Intake Upload/Create]
+        UI3[Workflow Monitor Real-time Status]
+        UI4[Approvals Human-in-the-Loop]
+        UI5[Memory View Learning Graph]
+        UI6[Reports Analytics & Export]
+    end
+
+    %% Agentic Orchestration Layer
+    subgraph Orchestration_Layer [Agentic Orchestration Layer]
+        Orch1[Dynamic Planner Orchestrator<br>- Goal analysis<br>- Action routing]
+        Orch2[Workflow Engine LangGraph<br>- Parallel Execution<br>- Conditional Loopbacks]
+        Orch3[Agent Registry<br>- Capability Metadata]
+    end
+
+    %% Specialized Agents
+    subgraph Agents_Layer [Specialized Agents - Parallel Execution]
+        A1[Meeting Agent<br>- Topics & Sentiment]
+        A2[CRM Agent<br>- Accounts & Opportunities]
+        A3[Context Agent<br>- RAG Document Retrieval]
+        A4[Missing Info Agent<br>- Question formulation]
+        A5[Risk Agent<br>- Churn & Deal Hazards]
+        A6[Opportunity Agent<br>- Upsell & Expansion]
+        A7[Recommendation Agent<br>- Action Synthesis]
+        A8[Judge Agent<br>- Recommendation Scoring]
+        A9[Explainability Agent<br>- Attributed Evidence]
+    end
+
+    %% Memory & Knowledge Layer
+    subgraph Memory_Layer [Memory & Knowledge Layer]
+        Mem1[Semantic Memory<br>- Vector DB Embeddings]
+        Mem2[Case Memory<br>- Graph Relationships]
+        Mem3[Long Term Memory<br>- Lessons & Outcomes]
+        Mem4[Knowledge Base<br>- Enterprise Playbooks]
+        Mem5[Learning Engine<br>- Prompts Optimization]
+    end
+
+    %% Core Infrastructure
+    subgraph Infra_Layer [Core Infrastructure & Services]
+        Inf1[AI/LLM Layer<br>- Gemini / Groq / OpenRouter]
+        Inf2[Data Layer<br>- MongoDB / PostgreSQL]
+        Inf3[Vector Store<br>- ChromaDB / Pinecone]
+        Inf4[Governance & Compliance<br>- RBAC & Audits]
+    end
+
+    %% Human in the Loop
+    subgraph HITL_Layer [Human-In-The-Loop]
+        H1[Review / Edit / Approve]
+    end
+
+    %% Connections
+    UI_Layer --> Orchestration_Layer
+    Orch1 --> Orch2
+    Orch2 --> Orch3
+    Orch2 --> Agents_Layer
+    Agents_Layer --> Memory_Layer
+    Memory_Layer --> Infra_Layer
+    UI_Layer --> HITL_Layer
+    HITL_Layer --> Memory_Layer
 ```
+
+---
 
 ## 🛠 Technology Stack
 
