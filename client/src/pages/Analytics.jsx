@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
 import { Activity, Target, ShieldCheck, Zap } from "lucide-react";
+import { apiFetch } from "../lib/api";
 
 const trendData = [
   { name: 'Week 1', cases: 120, approvals: 100 },
@@ -28,7 +29,7 @@ export default function Analytics() {
   });
 
   useEffect(() => {
-    fetch("http://localhost:3005/api/analytics")
+    apiFetch("http://localhost:3005/api/analytics")
       .then(res => res.json())
       .then(data => setStats(data))
       .catch(console.error);
