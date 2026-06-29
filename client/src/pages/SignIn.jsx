@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import { BrainCircuit, Loader2, AlertCircle } from "lucide-react";
+import { BrainCircuit, Loader2, AlertCircle, ArrowLeft } from "lucide-react";
 
 export default function SignIn() {
   const { login } = useAuth();
@@ -35,6 +35,9 @@ export default function SignIn() {
   return (
     <div className="min-h-screen bg-[#F9FAFB] text-foreground font-sans flex flex-col justify-center py-12 sm:px-6 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-md flex flex-col items-center">
+        <Link to="/" className="inline-flex items-center text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors mb-6">
+          <ArrowLeft className="mr-1.5 h-3.5 w-3.5" /> Back to Home
+        </Link>
         <Link to="/" className="flex items-center space-x-2 mb-6">
           <BrainCircuit className="h-8 w-8 text-primary" />
           <span className="text-xl font-bold tracking-tight uppercase">Conclude One</span>
