@@ -1,11 +1,12 @@
 import { useState, useEffect } from "react";
 import { Database, RefreshCw, CheckCircle2 } from "lucide-react";
+import { apiFetch } from "../lib/api";
 
 export default function KnowledgeCenter() {
   const [sources, setSources] = useState([]);
 
   useEffect(() => {
-    fetch("http://localhost:3005/api/knowledge")
+    apiFetch("http://localhost:3005/api/knowledge")
       .then(res => res.json())
       .then(data => setSources(data))
       .catch(err => console.error(err));

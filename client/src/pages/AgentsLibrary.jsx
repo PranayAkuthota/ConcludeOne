@@ -1,11 +1,12 @@
 import { useState, useEffect } from "react";
 import { Bot, Clock, Activity } from "lucide-react";
+import { apiFetch } from "../lib/api";
 
 export default function AgentsLibrary() {
   const [agents, setAgents] = useState([]);
 
   useEffect(() => {
-    fetch("http://localhost:3005/api/agents")
+    apiFetch("http://localhost:3005/api/agents")
       .then(res => res.json())
       .then(data => setAgents(data))
       .catch(err => console.error(err));
