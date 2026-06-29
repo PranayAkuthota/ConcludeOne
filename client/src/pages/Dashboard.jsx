@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { Activity, ShieldAlert, CheckCircle2, Clock, ArrowRight, BrainCircuit, AlertTriangle } from "lucide-react";
+import { Activity, ShieldAlert, CheckCircle2, Clock, ArrowRight, BrainCircuit, AlertTriangle, X } from "lucide-react";
 import { apiFetch } from "../lib/api";
 
 export default function Dashboard() {
@@ -8,54 +8,37 @@ export default function Dashboard() {
   const [activeCases, setActiveCases] = useState([]);
   const [pendingApprovals, setPendingApprovals] = useState([]);
   
-  const simulateWebhook = async () => {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [formData, setFormData] = useState({
+    title: "",
+    customerId: "",
+    meetingTranscript: "",
+    crmNotes: "",
+    emails: ""
+  });
+  
+  const handleCreateCase = async (e) => {
+    e.preventDefault();
+    setIsSubmitting(true);
     try {
-      const scenarios = [
-        {
-          title: "Pricing Objection",
-          transcript: "Customer: Your new pricing tier is too expensive. We need a major discount to stay on board.",
-          notes: "Upcoming renewal. Exploring alternatives."
-        },
-        {
-          title: "Expansion Opportunity",
-          transcript: "Customer: We have a new team of 50 users and want to expand our licenses for the AI Analytics Suite.",
-          notes: "Healthy adoption. $150k expansion opportunity."
-        },
-        {
-          title: "Implementation Delay",
-          transcript: "Customer: The implementation of the new analytics module is blocked. We missed internal deadlines.",
-          notes: "Technical blocker in onboarding phase."
-        },
-        {
-          title: "High Churn Risk",
-          transcript: "Customer: We are canceling our subscription and moving to competitor X. The platform is too slow.",
-          notes: "Critical Risk. Competitor evaluation in progress."
-        },
-        {
-          title: "Feature Request",
-          transcript: "Customer: We need custom reporting features added to your roadmap before we renew.",
-          notes: "Stable account, requesting product parity."
-        }
-      ];
-      
-      const randomScenario = scenarios[Math.floor(Math.random() * scenarios.length)];
-
-      const payload = {
-        title: randomScenario.title,
-        customerId: `CUST-${Math.floor(Math.random() * 90000) + 10000}`,
-        inputs: {
-          meetingTranscript: randomScenario.transcript,
-          crmNotes: randomScenario.notes
-        }
-      };
-
       const res = await apiFetch("http://localhost:3005/api/cases", {
         method: "POST",
-        body: payload
+        body: {
+          title: formData.title || "New Analysis Case",
+          customerId: formData.customerId || "UNKNOWN",
+          inputs: {
+            meetingTranscript: formData.meetingTranscript,
+            crmNotes: formData.crmNotes,
+            emails: formData.emails
+          }
+        }
       });
-      if (res.ok) window.location.reload();
+      const newCase = await res.json();
+      window.location.href = `/cases/${newCase._id}`;
     } catch (err) {
       console.error(err);
+      setIsSubmitting(false);
     }
   };
 
@@ -85,11 +68,11 @@ export default function Dashboard() {
         </div>
         <div className="mt-4 md:mt-0 flex items-center space-x-3">
           <button 
-            onClick={simulateWebhook}
+            onClick={() => setIsModalOpen(true)}
             className="flex items-center px-4 py-2 bg-primary text-primary-foreground text-sm font-semibold rounded-md shadow-sm hover:bg-primary/90 transition-colors"
           >
             <BrainCircuit className="mr-2 h-4 w-4" />
-            Simulate Enterprise Case
+            Analyze New Case
           </button>
         </div>
       </div>
@@ -186,6 +169,54 @@ export default function Dashboard() {
           </div>
         </div>
       </div>
+
+      {isModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm">
+          <div className="bg-card w-full max-w-2xl rounded-xl shadow-lg border border-border flex flex-col max-h-[90vh]">
+            <div className="flex items-center justify-between p-6 border-b border-border">
+              <h2 className="text-xl font-bold">Analyze New Case</h2>
+              <button onClick={() => setIsModalOpen(false)} className="text-muted-foreground hover:text-foreground">
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+            <div className="p-6 overflow-y-auto">
+              <form id="createCaseForm" onSubmit={handleCreateCase} className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Case Title</label>
+                    <input required type="text" className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary" placeholder="e.g. Q3 Renewal Risk" value={formData.title} onChange={e => setFormData({...formData, title: e.target.value})} />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Customer ID</label>
+                    <input required type="text" className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary" placeholder="e.g. CUST-123" value={formData.customerId} onChange={e => setFormData({...formData, customerId: e.target.value})} />
+                  </div>
+                </div>
+                
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Meeting Transcript</label>
+                  <textarea className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary min-h-[100px]" placeholder="Paste latest meeting transcript here..." value={formData.meetingTranscript} onChange={e => setFormData({...formData, meetingTranscript: e.target.value})} />
+                </div>
+                
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">CRM Notes (Account Health, Opportunity Value, etc.)</label>
+                  <textarea className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary min-h-[80px]" placeholder="Paste Salesforce/Hubspot notes here..." value={formData.crmNotes} onChange={e => setFormData({...formData, crmNotes: e.target.value})} />
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Recent Email Threads</label>
+                  <textarea className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary min-h-[80px]" placeholder="Paste relevant customer emails here..." value={formData.emails} onChange={e => setFormData({...formData, emails: e.target.value})} />
+                </div>
+              </form>
+            </div>
+            <div className="p-6 border-t border-border flex justify-end space-x-3 bg-muted/20">
+              <button onClick={() => setIsModalOpen(false)} className="px-4 py-2 text-sm font-medium border border-input bg-background rounded-md hover:bg-muted">Cancel</button>
+              <button type="submit" form="createCaseForm" disabled={isSubmitting} className="px-4 py-2 text-sm font-medium bg-primary text-primary-foreground rounded-md hover:bg-primary/90 disabled:opacity-50 flex items-center">
+                {isSubmitting ? "Orchestrating Agents..." : "Analyze Case"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
