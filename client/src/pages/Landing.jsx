@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { BrainCircuit, Bot, ShieldCheck, ChevronRight, Activity, Cpu, Database, CheckSquare } from "lucide-react";
+import { BrainCircuit, Bot, ShieldCheck, ChevronRight, Activity, Cpu, Database, CheckSquare, Network } from "lucide-react";
 
 export default function Landing() {
   return (
