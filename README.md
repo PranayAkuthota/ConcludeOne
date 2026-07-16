@@ -1,7 +1,7 @@
 # Conclude One
 **Enterprise Decision Intelligence Platform**
 
-* **GitHub Repository**: [Pranathi3124/Conclude-One](https://github.com/Pranathi3124/Conclude-One)
+* **GitHub Repository**: https://github.com/PranayAkuthota/ConcludeOne
 
 ---
 
