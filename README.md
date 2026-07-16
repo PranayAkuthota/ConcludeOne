@@ -1,12 +1,6 @@
 # Conclude One
 **Enterprise Decision Intelligence Platform**
 
-### 👥 Submission Details
-* **Team Name**: Conclude One
-* **Members**:
-  * Akuthota Pranathi
-  * A. Rakshitha
-  * Bhukya Ashok
 * **GitHub Repository**: [Pranathi3124/Conclude-One](https://github.com/Pranathi3124/Conclude-One)
 
 ---
