@@ -1,0 +1,113 @@
+[
+  {
+    "id": "customer_success",
+    "name": "Customer Success & Retention",
+    "kpis": {
+      "metric1": "Decisions Generated",
+      "metric2": "Automation Rate",
+      "metric3": "AI Confidence",
+      "metric4": "Avg Latency"
+    },
+    "agents": {
+      "planner": "Planner Agent",
+      "ingestor": "Meeting Agent",
+      "context": "CRM Context Agent",
+      "analyzer": "Risk Analysis Agent",
+      "reasoner": "Recommendation Agent",
+      "explainability": "Explainability Agent"
+    },
+    "nodes": [
+      { "id": 1, "label": "Orchestration Hub", "type": "core" },
+      { "id": 2, "label": "CRM History", "type": "input" },
+      { "id": 3, "label": "Call Audio Transcripts", "type": "input" },
+      { "id": 4, "label": "Email Threads", "type": "input" },
+      { "id": 5, "label": "Meeting Agent", "type": "agent" },
+      { "id": 6, "label": "CRM Agent", "type": "agent" },
+      { "id": 7, "label": "Context RAG Engine", "type": "agent" },
+      { "id": 8, "label": "Risk Analyst Agent", "type": "agent" },
+      { "id": 9, "label": "Churn Prevention Playbook", "type": "playbook" },
+      { "id": 10, "label": "Standard Discount margins", "type": "playbook" },
+      { "id": 11, "label": "Executive Briefs", "type": "output" },
+      { "id": 12, "label": "Approved Actions", "type": "output" },
+      { "id": 13, "label": "Long-Term Memory Node", "type": "output" }
+    ],
+    "prompts": {
+      "planner": "You are a customer success operations planner. Evaluate customer objections, pricing pressure, and churn triggers...",
+      "analyzer": "Evaluate deal health, compute financial churn risk parameters, and calculate overall customer retention probability..."
+    }
+  },
+  {
+    "id": "it_triage",
+    "name": "IT Incident Triage & Resolution",
+    "kpis": {
+      "metric1": "Incidents Resolved",
+      "metric2": "Auto-Triage Rate",
+      "metric3": "Diagnostic Confidence",
+      "metric4": "MTTR Latency"
+    },
+    "agents": {
+      "planner": "Dispatcher Agent",
+      "ingestor": "Log Parser Agent",
+      "context": "Infrastructure Context Agent",
+      "analyzer": "Root Cause Analyst Agent",
+      "reasoner": "Fix Recommender Agent",
+      "explainability": "Impact Assessor Agent"
+    },
+    "nodes": [
+      { "id": 1, "label": "Incident Dispatcher", "type": "core" },
+      { "id": 2, "label": "System Log Streams", "type": "input" },
+      { "id": 3, "label": "Alert Webhook Ingestion", "type": "input" },
+      { "id": 4, "label": "Deployment Git Diffs", "type": "input" },
+      { "id": 5, "label": "Log Parser Agent", "type": "agent" },
+      { "id": 6, "label": "Infra Context Agent", "type": "agent" },
+      { "id": 7, "label": "Runbook RAG Engine", "type": "agent" },
+      { "id": 8, "label": "Root Cause Agent", "type": "agent" },
+      { "id": 9, "label": "Disaster Recovery Playbook", "type": "playbook" },
+      { "id": 10, "label": "SLA Concession Policies", "type": "playbook" },
+      { "id": 11, "label": "Resolution Briefs", "type": "output" },
+      { "id": 12, "label": "Scheduled Rollbacks", "type": "output" },
+      { "id": 13, "label": "Post-Mortem Memory Node", "type": "output" }
+    ],
+    "prompts": {
+      "planner": "You are an IT systems operations planner. Evaluate service degradation logs, deployment git diffs, and network outages...",
+      "analyzer": "Calculate infrastructure vulnerability metrics, SLA blast radius, and system root cause failure vectors..."
+    }
+  },
+  {
+    "id": "b2b_staffing",
+    "name": "B2B Staffing & Talent Placement",
+    "kpis": {
+      "metric1": "Placements Synthesized",
+      "metric2": "Candidate Auto-Match Rate",
+      "metric3": "Matching Score",
+      "metric4": "Fill Latency"
+    },
+    "agents": {
+      "planner": "Role Router Agent",
+      "ingestor": "Resume Ingestion Agent",
+      "context": "Employer Context Agent",
+      "analyzer": "Skill Matrix Analyst Agent",
+      "reasoner": "Candidate Matching Agent",
+      "explainability": "Compliance Evaluator Agent"
+    },
+    "nodes": [
+      { "id": 1, "label": "Role Router Hub", "type": "core" },
+      { "id": 2, "label": "Employer Job Descriptions", "type": "input" },
+      { "id": 3, "label": "Candidate Resume Parser", "type": "input" },
+      { "id": 4, "label": "Interview Transcripts", "type": "input" },
+      { "id": 5, "label": "Resume Parser Agent", "type": "agent" },
+      { "id": 6, "label": "Employer Context Agent", "type": "agent" },
+      { "id": 7, "label": "Job Matrix RAG Engine", "type": "agent" },
+      { "id": 8, "label": "Skill Matrix Agent", "type": "agent" },
+      { "id": 9, "label": "Compliance Hiring Laws", "type": "playbook" },
+      { "id": 10, "label": "Salary Range Standards", "type": "playbook" },
+      { "id": 11, "label": "Candidate Profiles", "type": "output" },
+      { "id": 12, "label": "Scheduled Interviews", "type": "output" },
+      { "id": 13, "label": "Placement Feedback Loop", "type": "output" }
+    ],
+    "prompts": {
+      "planner": "You are a recruitment dispatch planner. Compare employer job requirements against resume skills and candidate interviews...",
+      "analyzer": "Analyze skill gaps, hiring compliance issues, salary budget margins, and place matching likelihood parameters..."
+    }
+  }
+]
