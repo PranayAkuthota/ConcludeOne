@@ -34,8 +34,8 @@ app.use('/api', apiRoutes);
 const clientDistPath = path.join(__dirname, '../client/dist');
 if (fs.existsSync(clientDistPath)) {
   app.use(express.static(clientDistPath));
-  // SPA fallback for client-side routing
-  app.get('*', (req, res, next) => {
+  // SPA fallback for client-side routing (Express 5 compatible)
+  app.get('/(.*)', (req, res, next) => {
     if (req.path.startsWith('/api')) {
       return next();
     }
