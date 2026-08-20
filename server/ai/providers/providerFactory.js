@@ -12,31 +12,24 @@ class FallbackProvider extends BaseProvider {
   }
 
   async invoke(prompt, schema = null) {
-    let currentProvider = this.primary;
-    let fallbackIndex = 0;
+    const providers = [this.primary, ...(this.fallbacks || [])];
+    let lastError = null;
 
-    while (currentProvider) {
+    for (const provider of providers) {
+      if (!provider) continue;
       try {
-        console.log(`[ORCHESTRATION] Invoking provider: ${currentProvider.name}`);
-        const result = await currentProvider.invoke(prompt, schema);
-        this.lastUsedProviderName = currentProvider.name;
+        console.log(`[ORCHESTRATION] Invoking provider: ${provider.name}`);
+        const result = await provider.invoke(prompt, schema);
+        this.lastUsedProviderName = provider.name;
         return result;
       } catch (error) {
-        console.warn(`[ORCHESTRATION] Provider [${currentProvider.name}] failed. Error: ${error.message}`);
-        
-        // Quota / Rate Limit / Service Error checks
-        const isQuotaOrServiceError = /rate limit|quota|429|503|forbidden|403|unauthorized/i.test(error.message);
-        
-        if (isQuotaOrServiceError && fallbackIndex < this.fallbacks.length) {
-          const nextProvider = this.fallbacks[fallbackIndex++];
-          console.log(`[FAILOVER] Rate limit or service error detected. Falling back to [${nextProvider.name}]...`);
-          currentProvider = nextProvider;
-        } else {
-          console.error(`[FAILOVER] No more fallbacks available or error is not rate-limit/service-level. Rethrowing.`);
-          throw error;
-        }
+        lastError = error;
+        console.warn(`[ORCHESTRATION] Provider [${provider.name}] failed: ${error.message}. Trying next fallback...`);
       }
     }
+
+    console.error(`[FAILOVER] All configured AI providers failed. Last error: ${lastError?.message}`);
+    throw lastError || new Error("All AI providers failed.");
   }
 }
 
@@ -51,7 +44,7 @@ class ProviderFactory {
 
     const geminiModel = process.env[modelEnvKey] || (modelEnvKey === "MEETING_MODEL" ? "gemini-2.5-flash-lite" : "gemini-2.5-flash");
     const openrouterModel = process.env.OPENROUTER_MODEL || "google/gemini-2.5-flash";
-    const groqModel = process.env.GROQ_MODEL || "llama3-8b-8192";
+    const groqModel = process.env.GROQ_MODEL || "llama-3.1-8b-instant";
 
     // Instantiators
     const makeGemini = () => new GeminiProvider(geminiKey, geminiModel);
