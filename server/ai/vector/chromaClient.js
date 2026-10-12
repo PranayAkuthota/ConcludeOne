@@ -1,7 +1,22 @@
-const { ChromaClient } = require("chromadb");
+
+const { ChromaClient, CloudClient } = require("chromadb");
 const { GoogleGenerativeAIEmbeddings } = require("@langchain/google-genai");
 
-const client = new ChromaClient({ path: process.env.CHROMA_URL || "http://localhost:8000" });
+const isCloudConfigured = Boolean(
+  process.env.CHROMA_API_KEY &&
+  process.env.CHROMA_TENANT &&
+  process.env.CHROMA_DATABASE
+);
+
+const client = isCloudConfigured
+  ? new CloudClient({
+      apiKey: process.env.CHROMA_API_KEY,
+      tenant: process.env.CHROMA_TENANT,
+      database: process.env.CHROMA_DATABASE,
+    })
+  : new ChromaClient({
+      path: process.env.CHROMA_URL || "http://localhost:8000",
+    });
 
 const getEmbeddings = () => {
   return new GoogleGenerativeAIEmbeddings({
@@ -13,15 +28,20 @@ const getEmbeddings = () => {
 const initChroma = async () => {
   try {
     await client.heartbeat();
-    console.log("ChromaDB connected successfully");
+    console.log(
+      `ChromaDB connected successfully (${isCloudConfigured ? "Cloud" : "Local"})`
+    );
   } catch (error) {
-    console.warn("ChromaDB not reachable. Falling back to mock retrieval for development.", error.message);
+    console.error("ChromaDB connection failed:", error.message);
   }
 };
 
 const queryKnowledge = async (queryText) => {
   try {
-    const collection = await client.getCollection({ name: "enterprise_knowledge" });
+    const collection = await client.getCollection({
+      name: "enterprise_knowledge",
+    });
+
     const embeddings = getEmbeddings();
     const queryVector = await embeddings.embedQuery(queryText);
 
@@ -29,13 +49,17 @@ const queryKnowledge = async (queryText) => {
       queryEmbeddings: [queryVector],
       nResults: 3,
     });
-    
-    if (results.documents[0].length === 0) return "No relevant playbooks found.";
-    return results.documents[0].join("\n\n---\n\n");
+
+    const documents = results.documents?.[0] || [];
+
+    if (documents.length === 0) {
+      return "No relevant playbooks found.";
+    }
+
+    return documents.join("\n\n---\n\n");
   } catch (error) {
-    // Fallback mock if chroma is not running
-    console.warn("Chroma query failed. Using mock data.", error.message);
-    return "Playbook: For Enterprise customers with Yellow health score and upcoming renewals, prioritize Executive Business Review (EBR) and escalate any open support tickets to Tier 3 immediately.";
+    console.error("ChromaDB query failed:", error.message);
+    return "Knowledge retrieval is currently unavailable.";
   }
 };
 
